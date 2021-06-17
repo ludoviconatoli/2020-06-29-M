@@ -100,13 +100,28 @@ public class FXMLController {
     @FXML
     void doRicorsione(ActionEvent event) {
     	this.txtResult.clear();
-    	Director partenza = this.boxRegista.getValue();
-    	int max = Integer.parseInt(this.txtAttoriCondivisi.getText());
-    	List<Adiacenza> adiacenti = this.model.cercaCamminoMinimo(partenza, max);
     	
-    	for(Adiacenza a: adiacenti) {
-    		this.txtResult.appendText(a.getD2() + "   con attori condivisi: " + a.getPeso() + "\n");
+    	Director partenza = this.boxRegista.getValue();
+    	if(partenza == null) {
+    		this.txtResult.setText("Selezionare prima un regista");
+    		return;
     	}
+    	
+    	int max;
+    	try{
+    		max = Integer.parseInt(this.txtAttoriCondivisi.getText());
+    	}catch(NumberFormatException nfe) {
+    		this.txtResult.setText("Inserisci un valore numerico positivo come n. attori condivisi");
+    		return;
+    	}
+    	
+    	List<Director> adiacenti = this.model.cercaCamminoMinimo(partenza, max);
+    	
+    	for(Director d: adiacenti) {
+    		this.txtResult.appendText(d + "\n");
+    	}
+    	
+    	this.txtResult.appendText("\nIl peso totale: " + this.model.getPesoTotale());
     }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete

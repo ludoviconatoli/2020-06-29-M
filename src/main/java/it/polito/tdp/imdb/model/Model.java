@@ -53,6 +53,10 @@ public class Model {
 		return grafo.vertexSet();
 	}
 	
+	public double getPesoTotale() {
+		return this.pesoMigliore;
+	}
+	
 	public List<Adiacenza> getRegistiAdiacenti(Director d){
 		
 		List<Adiacenza> parziale = new ArrayList<>();
@@ -66,13 +70,16 @@ public class Model {
 		return parziale;
 	}
 	
-	private List<Adiacenza> camminoMinimo;
-	private int contAttori = 0;
-	public List<Adiacenza> cercaCamminoMinimo(Director partenza, int nAttoriMax) {
+	private List<Director> camminoMinimo;
+	private int nRegisti = 0;
+	private double pesoTotale = 0.0;
+	private double pesoMigliore = 0.0;
+	
+	public List<Director> cercaCamminoMinimo(Director partenza, int nAttoriMax) {
 		
-		List<Adiacenza> parziale = new ArrayList<>();
+		List<Director> parziale = new ArrayList<>();
 		
-		parziale.add(new Adiacenza(partenza, null,0));
+		parziale.add(partenza);
 		
 		camminoMinimo = new ArrayList<>();
 		
@@ -81,24 +88,29 @@ public class Model {
 		return camminoMinimo;
 	}
 
-	private void cerca(Director partenza, List<Adiacenza> parziale, int nAttoriMax) {
-		if(contAttori > nAttoriMax) {
-			if(camminoMinimo.size() < parziale.size()) {
+	private void cerca(Director partenza, List<Director> parziale, int nAttoriMax) {
+		if(pesoTotale <= nAttoriMax) {
+			if(parziale.size() > nRegisti && pesoTotale >= pesoMigliore) {
 				camminoMinimo = new ArrayList<>(parziale);
+				this.nRegisti = parziale.size();
+				this.pesoMigliore = pesoTotale;
 			}
 			
 			return;
 		}
 		
-		for(DefaultWeightedEdge de: grafo.edgesOf(parziale.get(parziale.size()-1).getD1())) {
+		for(Director vicino: Graphs.neighborListOf(grafo, parziale.get(parziale.size()-1))) {
 			
-			Adiacenza a = new Adiacenza(grafo.getEdgeSource(de), grafo.getEdgeTarget(de), grafo.getEdgeWeight(de));
-			if(!parziale.contains(a)) {
-				parziale.add(a);
+			int peso = (int)grafo.getEdgeWeight(this.grafo.getEdge(parziale.get(parziale.size()-1), vicino));
+			
+			if(!parziale.contains(vicino)) {
+				pesoTotale += peso;
+				parziale.add(vicino);
 				
 				cerca(partenza, parziale, nAttoriMax);
 				
-				parziale.remove(parziale.get(parziale.size()-1));
+				pesoTotale -= peso;
+				parziale.remove(parziale.size()-1);
 			}
 		}
 	}
